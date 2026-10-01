@@ -1,0 +1,81 @@
+# Cloud Build configuration for ADK Agent-to-Agent CI/CD Pipeline
+# Automatically triggered on Git push to 'main'
+
+steps:
+  # 1. Build Orchestrator Agent Image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-orchestrator'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Building Orchestrator Agent image..."
+        # In production, points to Dockerfile; for hello-world, tags sample image
+        docker pull us-docker.pkg.dev/cloudrun/container/hello:latest
+        docker tag us-docker.pkg.dev/cloudrun/container/hello:latest \
+          ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REPO}/orchestrator:${SHORT_SHA}
+        docker tag us-docker.pkg.dev/cloudrun/container/hello:latest \
+          ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REPO}/orchestrator:latest
+
+  # 2. Build Specialist Agent Image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-specialist'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Building Specialist Agent image..."
+        docker pull us-docker.pkg.dev/cloudrun/container/hello:latest
+        docker tag us-docker.pkg.dev/cloudrun/container/hello:latest \
+          ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REPO}/specialist:${SHORT_SHA}
+        docker tag us-docker.pkg.dev/cloudrun/container/hello:latest \
+          ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REPO}/specialist:latest
+
+  # 3. Push Container Images to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-images'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Pushing images to Artifact Registry..."
+        docker push ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REPO}/orchestrator:${SHORT_SHA}
+        docker push ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REPO}/orchestrator:latest
+        docker push ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REPO}/specialist:${SHORT_SHA}
+        docker push ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REPO}/specialist:latest
+
+  # 4. Deploy Specialist Agent to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    id: 'deploy-specialist'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Deploying new revision to Cloud Run Specialist Service..."
+        gcloud run deploy ${_SPECIALIST_SVC} \
+          --image ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REPO}/specialist:${SHORT_SHA} \
+          --region ${_REGION} \
+          --quiet
+
+  # 5. Deploy Orchestrator Agent to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    id: 'deploy-orchestrator'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Deploying new revision to Cloud Run Orchestrator Service..."
+        gcloud run deploy ${_ORCHESTRATOR_SVC} \
+          --image ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REPO}/orchestrator:${SHORT_SHA} \
+          --region ${_REGION} \
+          --quiet
+
+# Default substitutions (overridden by Cloud Build Trigger)
+substitutions:
+  _REGION: 'europe-west4'
+  _ARTIFACT_REPO: 'adk-agents'
+  _ORCHESTRATOR_SVC: 'agent-orchestrator'
+  _SPECIALIST_SVC: 'agent-specialist'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

@@ -1,0 +1,4 @@
+encryptionsalt: v1:KWCB6vdKymY=:v1:FVE5YXDWwXVKlLcG:wmts3zDWRcXAzKz0YXfPbpFjrMHBCA==
+config:
+  gcp:project: devfest-modena-2026-pulumi
+  gcp:region: europe-west4

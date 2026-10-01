@@ -1,0 +1,132 @@
+config:
+  zone:
+    type: string
+    default: ""
+resources:
+  # 1. Custom mode VPC network
+  customVpc:
+    type: gcp:compute:Network
+    name: custom_vpc
+    properties:
+      name: custom-vpc
+      autoCreateSubnetworks: false
+      routingMode: REGIONAL
+  # 2. Subnet
+  customSubnet:
+    type: gcp:compute:Subnetwork
+    name: custom_subnet
+    properties:
+      name: custom-subnet
+      ipCidrRange: 10.0.1.0/24
+      region: ${region}
+      network: ${customVpc.id}
+  # 3. Firewall Rules
+  allowSsh:
+    type: gcp:compute:Firewall
+    name: allow_ssh
+    properties:
+      allows:
+        - protocol: tcp
+          ports:
+            - '22'
+      name: ${customVpc.name}-allow-ssh
+      network: ${customVpc.name}
+      description: Allow SSH access from anywhere
+      sourceRanges:
+        - 0.0.0.0/0
+  allowInternal:
+    type: gcp:compute:Firewall
+    name: allow_internal
+    properties:
+      allows:
+        - protocol: tcp
+        - protocol: udp
+        - protocol: icmp
+      name: ${customVpc.name}-allow-internal
+      network: ${customVpc.name}
+      description: Allow internal traffic within the subnet
+      sourceRanges:
+        - ${customSubnet.ipCidrRange}
+  allowIcmp:
+    type: gcp:compute:Firewall
+    name: allow_icmp
+    properties:
+      allows:
+        - protocol: icmp
+      name: ${customVpc.name}-allow-icmp
+      network: ${customVpc.name}
+      description: Allow ICMP ping from anywhere
+      sourceRanges:
+        - 0.0.0.0/0
+  # 4. 3 VM Instances
+  vmInstance1:
+    type: gcp:compute:Instance
+    name: vm_instance_1
+    properties:
+      bootDisk:
+        initializeParams:
+          image: debian-cloud/debian-12
+      networkInterfaces:
+        - accessConfigs:
+            - {}
+          subnetwork: ${customSubnet.id}
+      name: vm-instance-1
+      machineType: e2-micro
+      zone: ${myZone}
+  vmInstance2:
+    type: gcp:compute:Instance
+    name: vm_instance_2
+    properties:
+      bootDisk:
+        initializeParams:
+          image: debian-cloud/debian-12
+      networkInterfaces:
+        - accessConfigs:
+            - {}
+          subnetwork: ${customSubnet.id}
+      name: vm-instance-2
+      machineType: e2-micro
+      zone: ${myZone}
+  vmInstance3:
+    type: gcp:compute:Instance
+    name: vm_instance_3
+    properties:
+      bootDisk:
+        initializeParams:
+          image: debian-cloud/debian-12
+      networkInterfaces:
+        - accessConfigs:
+            - {}
+          subnetwork: ${customSubnet.id}
+      name: vm-instance-3
+      machineType: e2-micro
+      zone: ${myZone}
+  # 5. GCS Storage Bucket
+  infraBucket:
+    type: gcp:storage:Bucket
+    name: infra_bucket
+    properties:
+      name: ${project}-infra-bucket
+      location: ${region}
+      uniformBucketLevelAccess: true
+      forceDestroy: true
+variables:
+  project: ${gcp:project}
+  region: ${gcp:region}
+  myZone:
+    fn::invoke:
+      function: std:coalesce
+      arguments:
+        input:
+          - ${zone}
+          - ${region}-a
+      return: result
+outputs:
+  networkName: ${customVpc.name}
+  subnetworkName: ${customSubnet.name}
+  vmInstances:
+    - ${vmInstance1.name}
+    - ${vmInstance2.name}
+    - ${vmInstance3.name}
+  bucketName: ${infraBucket.name}
+  bucketUrl: ${infraBucket.url}

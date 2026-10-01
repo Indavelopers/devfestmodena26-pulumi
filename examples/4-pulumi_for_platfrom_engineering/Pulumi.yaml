@@ -1,0 +1,7 @@
+name: pulumi-platform-engineering-adk
+description: "Platform Engineering with Pulumi: Google ADK Agent-to-Agent Platform on GCP with Cloud Build CI/CD"
+runtime:
+  name: python
+  options:
+    toolchain: pip
+    virtualenv: venv

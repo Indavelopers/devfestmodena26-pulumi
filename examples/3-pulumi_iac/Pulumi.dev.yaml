@@ -1,0 +1,4 @@
+encryptionsalt: v1:WarOCO+beS0=:v1:0uFLzG7bLm4GCk+V:N0+oGFNEL+WO52MJHOdfmaB+TDBAfg==
+config:
+  gcp:project: devfest-modena-2026-pulumi
+  gcp:region: europe-west4
