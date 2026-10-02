@@ -1,0 +1,5 @@
+pulumi>=3.0.0
+pulumi-gcp>=7.0.0
+requests>=2.28.0
+pytest>=7.0.0
+pytest-asyncio>=0.21.0

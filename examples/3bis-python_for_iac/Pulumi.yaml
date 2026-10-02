@@ -1,0 +1,6 @@
+name: python-for-iac
+runtime:
+  name: python
+  options:
+    virtualenv: .venv
+description: Demonstrating the top 5 advantages of using Python for Infrastructure as Code (IaC) with Pulumi on GCP.

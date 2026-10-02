@@ -1,0 +1,4 @@
+rule_name,port
+allow-http,80
+allow-https,443
+allow-ssh,22

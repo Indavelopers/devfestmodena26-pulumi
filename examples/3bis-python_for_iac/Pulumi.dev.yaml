@@ -1,0 +1,5 @@
+config:
+  gcp:project: pyconpt26-pulumi
+  gcp:region: europe-west4
+  gcp:zone: europe-west4-a
+encryptionsalt: v1:mUzddieLyHk=:v1:5//Ob8ZYjeWokZ5S:PJEZ/hOg2LG8/2AuzU4COES/wIjhvw==
