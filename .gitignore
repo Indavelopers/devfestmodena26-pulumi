@@ -1,0 +1,8 @@
+.markdownlint.json
+.venv/
+__pycache__/
+.pytest_cache/
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+.terraform.lock.hcl
