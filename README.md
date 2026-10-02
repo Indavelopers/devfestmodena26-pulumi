@@ -71,7 +71,3 @@ CC BY 4.0 (see `LICENSE.md`).
 - <https://github.com/Indavelopers/pyconpt26-pulumi>: PyConPT'26 session about Pulumi IaC + Python.
 - <https://github.com/Indavelopers/pycones25-pulumi>: PyConES'25 session about Pulumi IaC + Python.
 - <https://github.com/Indavelopers/gcp-training-projects>: Demo project and how-to guide to use Pulumi as an IaC (Infrastructure as Code) tool for creating GCP sandbox projects with starting resources for demos, workshops, trainings, etc.
-
-## TO-DOs
-
-- x
